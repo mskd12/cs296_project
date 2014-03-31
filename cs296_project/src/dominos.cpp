@@ -188,6 +188,8 @@ namespace cs296
 // 	}
 
      //groundBody
+     const float degtorad = 0.01745329251994f;
+
     b2Body* groundBody;
     {
 		b2EdgeShape groundBodyShape; 
@@ -266,49 +268,43 @@ namespace cs296
     
 	}*/
 
-	{
+	{//Fuel control 
 		  b2Vec2 vertices[3];
-		  vertices[0].Set(6,  6);
-		  vertices[1].Set(-4,  0);
-		  vertices[2].Set( 0, -4);
+		  vertices[0].Set(5.5,  6.5);
+		  vertices[1].Set(6.5,  5.5);
+		  vertices[2].Set(-4,  0);
+		  vertices[3].Set( 0, -4);
 		  
 		  b2PolygonShape polygonShape;
-		  polygonShape.Set(vertices, 3); //pass array to the shape
+		  polygonShape.Set(vertices, 4); //pass array to the shape
 		  
 		  b2FixtureDef myFixtureDef;
 		  b2BodyDef myBodyDef;
 		  myFixtureDef.shape = &polygonShape; //change the shape of the fixture
 		  myBodyDef.position.Set(8 ,23); //in the middle
-		  myBodyDef.type=b2_dynamicBody;
+		  //myBodyDef.type=b2_dynamicBody;
 		  b2Body* dynamicBody1 = m_world->CreateBody(&myBodyDef);
 		  dynamicBody1->CreateFixture(&myFixtureDef); //add a fixture to the body
 
 
 		  
-		  b2PrismaticJointDef prismaticJointDef;
+		  /*b2PrismaticJointDef prismaticJointDef;
 		  b2Vec2 v;
 		  v.Set(1, 1);
 		  prismaticJointDef.Initialize(dynamicBody1, groundBody, dynamicBody1->GetWorldCenter(), v);
-		  m_world->CreateJoint(&prismaticJointDef);
-
-
-
-
-
-
-
-
+		  m_world->CreateJoint(&prismaticJointDef);*/
 
 	}
 
-	{
+	{//Exhaust control
 		  b2Vec2 vertices[3];
-		  vertices[0].Set(-6,  6);
-		  vertices[1].Set(4,  0);
-		  vertices[2].Set( 0, -4);
+		  vertices[0].Set(-5.5,  6.5);
+		  vertices[1].Set(-6.5,  5.5);
+		  vertices[2].Set(4,  0);
+		  vertices[3].Set( 0, -4);
 		  
 		  b2PolygonShape polygonShape;
-		  polygonShape.Set(vertices, 3); //pass array to the shape
+		  polygonShape.Set(vertices, 4); //pass array to the shape
 		  
 		  b2FixtureDef myFixtureDef;
 		  b2BodyDef myBodyDef;
@@ -316,10 +312,100 @@ namespace cs296
 		  myBodyDef.position.Set(-8 ,23); //in the middle
 		  b2Body* dynamicBody2 = m_world->CreateBody(&myBodyDef);
 		  dynamicBody2->CreateFixture(&myFixtureDef); //add a fixture to the body
+
+		  /*b2PrismaticJointDef prismaticJointDef;
+		  b2Vec2 v;
+		  v.Set(1, -1);
+		  prismaticJointDef.Initialize(dynamicBody2, groundBody, dynamicBody2->GetWorldCenter(), v);
+		  m_world->CreateJoint(&prismaticJointDef);*/
+
+	}
+
+
+	{//Fuel control rod
+		b2Body* fuelRod1;
+		b2PolygonShape fuelRod1Poly;
+		b2BodyDef fuelRod1Def;
+		fuelRod1Poly.SetAsBox(4, 0.6f);
+		b2FixtureDef fuelRod1FixDef;
+
+		fuelRod1FixDef.shape = & fuelRod1Poly;
+		fuelRod1FixDef.density = 1.0f;
+		fuelRod1Def.position.Set(5, 37);
+		fuelRod1Def.type = b2_dynamicBody;
+		fuelRod1 = m_world->CreateBody(&fuelRod1Def);
+		fuelRod1->CreateFixture(&fuelRod1FixDef);
+
+		b2Body* fuelRod2;
+		b2PolygonShape fuelRod2Poly;
+		b2BodyDef fuelRod2Def;
+		fuelRod2Poly.SetAsBox(6, 0.6f);
+		b2FixtureDef fuelRod2FixDef;
+
+		fuelRod2FixDef.shape = & fuelRod2Poly;
+		fuelRod2FixDef.density = 1.0f;
+		fuelRod2Def.position.Set(12.3f, 33.7f);
+		fuelRod2Def.type = b2_dynamicBody;
+		fuelRod2Def.angle = -40 * degtorad;
+		fuelRod2 = m_world->CreateBody(&fuelRod2Def);
+		fuelRod2->CreateFixture(&fuelRod2FixDef);
+
+		b2WeldJointDef fuelRodjointDef;
+		fuelRodjointDef.bodyA = fuelRod1;
+		fuelRodjointDef.bodyB = fuelRod2;
+		fuelRodjointDef.localAnchorA.Set(3.85f, 0.0f);
+		fuelRodjointDef.localAnchorB.Set(-5.85f ,0.0f);
+
+		b2RevoluteJointDef* revolutejd = new b2RevoluteJointDef();
+		revolutejd->bodyA = fuelRod1;
+		revolutejd->bodyB = groundBody;
+		revolutejd->collideConnected = false;
+		revolutejd->localAnchorA.Set(4.85f, 0.3f); 
+		revolutejd->localAnchorB.Set(9.85f, 37.0f);
+		revolutejd->enableLimit = true;
+		revolutejd->lowerAngle = 0;
+		revolutejd->upperAngle = 0.5f;
+		//revolutejd->maxMotorTorque = 1.0;
+		//revolutejd->enableMotor = true;
+
+		//m_world->CreateJoint(revolutejd);
+
+
 	}
 
 
 
+
+
+	{//arbit body
+    	b2Body* b1;
+		b2PolygonShape bodyPoly;
+		b2BodyDef bd;
+		bodyPoly.SetAsBox(5, 5);
+		b2FixtureDef fd;
+		
+		fd.shape = &bodyPoly;
+		fd.restitution = 1.0;
+		fd.density = 1.0f;
+		bd.position.Set(25, 25);
+		bd.type = b2_dynamicBody;
+		b1 = m_world->CreateBody(&bd);
+		b1->CreateFixture(&fd);
+
+		b2RevoluteJointDef* revolutejd = new b2RevoluteJointDef();
+		revolutejd->bodyA = b1;
+		revolutejd->bodyB = groundBody;
+		revolutejd->collideConnected = false;
+		revolutejd->localAnchorA.Set(0,0); 
+		revolutejd->localAnchorB.Set(25,25);
+		revolutejd->enableLimit = true;
+		revolutejd->lowerAngle = 0;
+		revolutejd->upperAngle = 0.5f;
+		//revolutejd->maxMotorTorque = 1.0;
+		//revolutejd->enableMotor = true;
+
+		m_world->CreateJoint(revolutejd);
+    }
 
 }
   sim_t *sim = new sim_t("Dominos", dominos_t::create);
